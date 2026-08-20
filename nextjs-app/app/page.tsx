@@ -10,7 +10,7 @@ type Message = {
 const OLLAMA_URL = "http://localhost:11434";
 
 export default function Home() {
-  const [model, setModel] = useState("llama3.2");
+  const [model, setModel] = useState("llama3.2:3b");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,14 +42,18 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model, messages: nextMessages, stream: false }),
       });
-      if (!response.ok) throw new Error("Ollama returned an error");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error ?? "Ollama returned an error");
+      }
       const data = await response.json();
       setMessages([...nextMessages, { role: "assistant", content: data.message?.content ?? "No response received." }]);
       setConnection("connected");
-    } catch {
+    } catch(error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown Ollama error";
       setMessages([
         ...nextMessages,
-        { role: "assistant", content: "I could not reach Ollama. Make sure it is running and that the selected model is installed." },
+        { role: "assistant", content: `Ollama error: ${errorMessage}` },
       ]);
       setConnection("offline");
     } finally {
