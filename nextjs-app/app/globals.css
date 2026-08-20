@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f2ee;
+  --foreground: #1b1b1b;
+  --muted: #77736d;
+  --line: rgba(33, 31, 28, 0.13);
+  --accent: #292722;
 }
 
 @theme inline {
@@ -12,15 +15,58 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), sans-serif;
 }
+
+* { box-sizing: border-box; }
+
+.chat-shell {
+  width: min(100%, 980px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px 28px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar { display: flex; align-items: center; gap: 12px; }
+.brand-mark, .empty-icon {
+  display: grid; place-items: center; flex: none;
+  width: 40px; height: 40px; border-radius: 14px;
+  background: var(--accent); color: #f7f5ef; font-size: 19px;
+  box-shadow: 0 4px 14px rgba(30, 28, 24, .15);
+}
+.topbar h1 { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+.topbar p, .privacy-note { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+.connection-wrap { display: flex; align-items: center; gap: 7px; margin-left: auto; color: var(--muted); font-size: 12px; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #b6b1a8; }
+.status-dot.connected { background: #4f9b68; box-shadow: 0 0 0 3px rgba(79,155,104,.12); }
+.status-dot.offline { background: #c66c5c; }
+.check-button { border: 0; background: transparent; color: var(--foreground); cursor: pointer; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.conversation { flex: 1; width: min(100%, 720px); margin: 0 auto; padding: 10vh 0 40px; }
+.empty-state { text-align: center; padding-top: 12vh; }
+.empty-state .empty-icon { margin: 0 auto 20px; width: 48px; height: 48px; border-radius: 17px; }
+.empty-state h2 { margin: 0; font-size: clamp(22px, 4vw, 30px); letter-spacing: -.04em; font-weight: 620; }
+.empty-state p { margin: 10px 0; color: var(--muted); font-size: 14px; }
+.message { margin: 0 0 30px; line-height: 1.65; font-size: 15px; }
+.message.user { padding-left: 18px; border-left: 2px solid #c6c0b7; }
+.message-label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: .08em; }
+.message p { margin: 0; white-space: pre-wrap; }
+.thinking { display: flex; gap: 5px; padding: 8px 0; }
+.thinking span { width: 6px; height: 6px; border-radius: 50%; background: #9d988f; animation: pulse 1s infinite ease-in-out; }
+.thinking span:nth-child(2) { animation-delay: .15s; }.thinking span:nth-child(3) { animation-delay: .3s; }
+@keyframes pulse { 0%, 70%, 100% { opacity: .3; transform: translateY(0); } 35% { opacity: 1; transform: translateY(-3px); } }
+.composer { width: min(100%, 720px); margin: auto auto 0; padding: 14px 16px 12px; border: 1px solid var(--line); border-radius: 25px; background: rgba(255,255,255,.68); box-shadow: 0 12px 35px rgba(54, 48, 37, .08), inset 0 0 0 4px rgba(255,255,255,.33); backdrop-filter: blur(12px); }
+.composer textarea { display: block; width: 100%; min-height: 28px; max-height: 160px; resize: vertical; border: 0; outline: 0; background: transparent; color: var(--foreground); font: inherit; font-size: 15px; line-height: 1.5; }
+.composer textarea::placeholder { color: #a09a91; }
+.composer-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.model-picker { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+.model-picker input { width: 115px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.58); color: var(--foreground); font: inherit; font-size: 12px; outline: none; }
+.model-picker input:focus { border-color: #777067; }
+.send-button { width: 32px; height: 32px; border: 0; border-radius: 11px; background: var(--accent); color: white; font-size: 20px; line-height: 1; cursor: pointer; }
+.send-button:disabled { cursor: default; opacity: .28; }
+.privacy-note { text-align: center; margin-top: 11px; }
+@media (max-width: 600px) { .chat-shell { padding: 18px 15px 16px; } .connection-wrap span:not(.status-dot), .check-button { font-size: 11px; } .conversation { padding-top: 7vh; } .empty-state { padding-top: 10vh; } }

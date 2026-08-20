@@ -1,69 +1,118 @@
-import Image from "next/image";
+"use client";
+
+import { FormEvent, useState } from "react";
+
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+const OLLAMA_URL = "http://localhost:11434";
 
 export default function Home() {
+  const [model, setModel] = useState("llama3.2");
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [connection, setConnection] = useState<"idle" | "connected" | "offline">("idle");
+
+  async function checkConnection() {
+    try {
+      const response = await fetch(`${OLLAMA_URL}/api/tags`);
+      setConnection(response.ok ? "connected" : "offline");
+    } catch {
+      setConnection("offline");
+    }
+  }
+
+  async function sendMessage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const content = input.trim();
+    if (!content || isLoading) return;
+
+    const nextMessages = [...messages, { role: "user" as const, content }];
+    setMessages(nextMessages);
+    setInput("");
+    setIsLoading(true);
+    setConnection("idle");
+
+    try {
+      const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model, messages: nextMessages, stream: false }),
+      });
+      if (!response.ok) throw new Error("Ollama returned an error");
+      const data = await response.json();
+      setMessages([...nextMessages, { role: "assistant", content: data.message?.content ?? "No response received." }]);
+      setConnection("connected");
+    } catch {
+      setMessages([
+        ...nextMessages,
+        { role: "assistant", content: "I could not reach Ollama. Make sure it is running and that the selected model is installed." },
+      ]);
+      setConnection("offline");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="chat-shell">
+      <header className="topbar">
+        <div className="brand-mark">✦</div>
+        <div>
+          <h1>Local chat</h1>
+          <p>Ollama workspace</p>
+        </div>
+        <div className="connection-wrap">
+          <span className={`status-dot ${connection}`} />
+          <span>{connection === "connected" ? "Connected" : connection === "offline" ? "Offline" : "Not checked"}</span>
+          <button className="check-button" onClick={checkConnection} type="button">Check</button>
+        </div>
+      </header>
+
+      <section className="conversation" aria-live="polite">
+        {messages.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">✦</div>
+            <h2>What would you like to explore?</h2>
+            <p>Chat privately with a model running on your machine.</p>
+          </div>
+        ) : (
+          messages.map((message, index) => (
+            <article className={`message ${message.role}`} key={`${message.role}-${index}`}>
+              <span className="message-label">{message.role === "user" ? "You" : "Ollama"}</span>
+              <p>{message.content}</p>
+            </article>
+          ))
+        )}
+        {isLoading && <div className="thinking"><span /> <span /> <span /></div>}
+      </section>
+
+      <form className="composer" onSubmit={sendMessage}>
+        <textarea
+          aria-label="Message"
+          onChange={(event) => setInput(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              event.currentTarget.form?.requestSubmit();
+            }
+          }}
+          placeholder="Message your local model..."
+          value={input}
+          rows={1}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <div className="composer-footer">
+          <label className="model-picker">
+            <span>Model</span>
+            <input aria-label="Ollama model" onChange={(event) => setModel(event.target.value)} value={model} />
+          </label>
+          <button className="send-button" disabled={!input.trim() || isLoading} aria-label="Send message" type="submit">↑</button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </form>
+      <p className="privacy-note">Your messages stay on this device.</p>
+    </main>
   );
 }
