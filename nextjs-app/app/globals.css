@@ -32,6 +32,25 @@ body {
   flex-direction: column;
 }
 
+.test-button {
+  position: relative;
+  z-index: 10;
+  align-self: flex-start;
+  margin-bottom: 14px;
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #3f72d8;
+  color: white;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: rgba(63, 114, 216, .2);
+}
+
+.test-button:active { transform: scale(.98); }
+
 .topbar { display: flex; align-items: center; gap: 12px; }
 .brand-mark, .empty-icon {
   display: grid; place-items: center; flex: none;
@@ -69,4 +88,4 @@ body {
 .send-button { width: 32px; height: 32px; border: 0; border-radius: 11px; background: var(--accent); color: white; font-size: 20px; line-height: 1; cursor: pointer; }
 .send-button:disabled { cursor: default; opacity: .28; }
 .privacy-note { text-align: center; margin-top: 11px; }
-@media (max-width: 600px) { .chat-shell { padding: 18px 15px 16px; } .connection-wrap span:not(.status-dot), .check-button { font-size: 11px; } .conversation { padding-top: 7vh; } .empty-state { padding-top: 10vh; } }
+@media (max-width: 600px) { .chat-shell { min-height: 100svh; padding: 18px 15px 16px; } .connection-wrap span:not(.status-dot), .check-button { font-size: 11px; } .conversation { min-height: 0; padding-top: 7vh; } .empty-state { padding-top: 10vh; } .composer { flex: none; } .composer-footer { min-height: 32px; } .model-picker { min-width: 0; } .model-picker input { width: 105px; } }

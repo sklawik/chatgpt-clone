@@ -7,7 +7,10 @@ type Message = {
   content: string;
 };
 
-const OLLAMA_URL = "http://localhost:11434";
+const OLLAMA_URL =
+  typeof window === "undefined"
+    ? "http://localhost:11434"
+    : `http://${window.location.hostname}:11434`;
 
 export default function Home() {
   const [model, setModel] = useState("llama3.2:3b");
@@ -15,8 +18,10 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [connection, setConnection] = useState<"idle" | "connected" | "offline">("idle");
+  const [testClicked, setTestClicked] = useState(false);
 
   async function checkConnection() {
+    alert('click')
     try {
       const response = await fetch(`${OLLAMA_URL}/api/tags`);
       setConnection(response.ok ? "connected" : "offline");
@@ -25,8 +30,7 @@ export default function Home() {
     }
   }
 
-  async function sendMessage(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function sendMessage() {
     const content = input.trim();
     if (!content || isLoading) return;
 
@@ -43,13 +47,14 @@ export default function Home() {
         body: JSON.stringify({ model, messages: nextMessages, stream: false }),
       });
       if (!response.ok) {
+        setConnection("connected");
         const errorData = await response.json().catch(() => null);
         throw new Error(errorData?.error ?? "Ollama returned an error");
       }
       const data = await response.json();
       setMessages([...nextMessages, { role: "assistant", content: data.message?.content ?? "No response received." }]);
       setConnection("connected");
-    } catch(error: unknown) {
+    } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Unknown Ollama error";
       setMessages([
         ...nextMessages,
@@ -61,8 +66,15 @@ export default function Home() {
     }
   }
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void sendMessage();
+  }
+
   return (
     <main className="chat-shell">
+
+
       <header className="topbar">
         <div className="brand-mark">✦</div>
         <div>
@@ -73,9 +85,10 @@ export default function Home() {
           <span className={`status-dot ${connection}`} />
           <span>{connection === "connected" ? "Connected" : connection === "offline" ? "Offline" : "Not checked"}</span>
           <button className="check-button" onClick={checkConnection} type="button">Check</button>
-        </div>
-      </header>
 
+        </div>
+
+      </header>
       <section className="conversation" aria-live="polite">
         {messages.length === 0 ? (
           <div className="empty-state">
@@ -94,7 +107,7 @@ export default function Home() {
         {isLoading && <div className="thinking"><span /> <span /> <span /></div>}
       </section>
 
-      <form className="composer" onSubmit={sendMessage}>
+      <form className="composer" onSubmit={handleSubmit}>
         <textarea
           aria-label="Message"
           onChange={(event) => setInput(event.target.value)}
@@ -113,7 +126,7 @@ export default function Home() {
             <span>Model</span>
             <input aria-label="Ollama model" onChange={(event) => setModel(event.target.value)} value={model} />
           </label>
-          <button className="send-button" disabled={!input.trim() || isLoading} aria-label="Send message" type="submit">↑</button>
+          <button className="send-button" disabled={!input.trim() || isLoading} aria-label="Send message" onClick={() => void sendMessage()} type="button">↑</button>
         </div>
       </form>
       <p className="privacy-note">Your messages stay on this device.</p>
