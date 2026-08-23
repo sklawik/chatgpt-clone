@@ -21,7 +21,7 @@ export default function Home() {
   const [testClicked, setTestClicked] = useState(false);
 
   async function checkConnection() {
-    alert('click')
+    alert()
     try {
       const response = await fetch(`${OLLAMA_URL}/api/tags`);
       setConnection(response.ok ? "connected" : "offline");
