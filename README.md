@@ -1,4 +1,4 @@
-LIVE DEMO: https://blue-mushroom-0b2505710.7.azurestaticapps.net/
+W.I.P LIVE DEMO: https://blue-mushroom-0b2505710.7.azurestaticapps.net/
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
