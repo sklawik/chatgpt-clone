@@ -73,7 +73,9 @@ export default function Home() {
 
   return (
     <main className="chat-shell">
-
+      <a href="/.auth/login/aad">
+        Sign in with Microsoft
+      </a>
 
       <header className="topbar">
         <div className="brand-mark">✦</div>
