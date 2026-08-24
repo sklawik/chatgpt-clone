@@ -2,7 +2,7 @@ W.I.P Live Demo: https://blue-mushroom-0b2505710.7.azurestaticapps.net/
 
 1. ✅ deployment on Azure as static NextJS App
 2. 🟨 in progress - agents API integration
-3. 🟨 Optionally, auth using IAM
+3. 🟨 MS Entra ID
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
